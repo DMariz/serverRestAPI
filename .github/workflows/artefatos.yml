@@ -1,43 +1,22 @@
-name: Cypress Tests with Dependency and Artifact Caching
-
+name: Artifacts
 on: push
-
 jobs:
-  install:
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Cypress install
-        uses: cypress-io/github-action@v6
-        with:
-          # Disable running of tests within install job
-          runTests: false
-          build: npm run build
-
-      - name: Save build folder
-        uses: actions/upload-artifact@v4
-        with:
-          name: build
-          if-no-files-found: error
-          path: build
-
   cypress-run:
     runs-on: ubuntu-22.04
-    needs: install
+    name: Artifacts
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Download the build folder
-        uses: actions/download-artifact@v4
+      - uses: actions/checkout@v4
+      - uses: cypress-io/github-action@v6
+      # after the test run completes store videos and any screenshots
+      - uses: actions/upload-artifact@v4
+        # add the line below to store screenshots only on failures
+        # if: failure()
         with:
-          name: build
-          path: build
-
-      - name: Cypress run
-        uses: cypress-io/github-action@v6
+          name: cypress-screenshots
+          path: cypress/screenshots
+          if-no-files-found: ignore # 'warn' or 'error' are also available, defaults to `warn`
+      - uses: actions/upload-artifact@v4
         with:
-          start: npm start
-          browser: chrome
+          name: cypress-videos
+          path: cypress/videos
+          if-no-files-found: ignore # 'warn' or 'error' are also available, defaults to `warn`
